@@ -197,9 +197,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--green)}
   <nav class="nav">
     <button class="nav-btn active" onclick="switchPage('home',this)"><span class="nav-icon">&#9776;</span>Home</button>
     <button class="nav-btn" id="nav-register" onclick="switchPage('register',this)"><span class="nav-icon">&#128273;</span>Login</button>
-    <button class="nav-btn" onclick="switchPage('bracket',this)"><span class="nav-icon">&#127942;</span>Bracket</button>
+    <button class="nav-btn" id="nav-bracket" style="display:none" onclick="switchPage('bracket',this)"><span class="nav-icon">&#127942;</span>Bracket</button>
     <button class="nav-btn" onclick="switchPage('fixtures',this)"><span class="nav-icon">&#128247;</span>Fixtures</button>
-    <button class="nav-btn" onclick="switchPage('profile',this)"><span class="nav-icon">&#128100;</span>Profile</button>
+    <button class="nav-btn" id="nav-profile" style="display:none" onclick="switchPage('profile',this)"><span class="nav-icon">&#128100;</span>Profile</button>
     <button class="nav-btn admin-nav" onclick="switchPage('admin',this)"><span class="nav-icon">&#128274;</span>Admin</button>
   </nav>
   <div class="fb-pill loading" id="fb-badge">connecting…</div>
@@ -209,7 +209,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--green)}
 <!-- ═══════════════════════════════ HOME ═══════════════════════════════ -->
 <div class="page active" id="page-home">
   <div class="section-title">Tournament dashboard</div>
-  <div class="grid3" style="margin-bottom:14px">
+  <div class="grid3" id="home-stats" style="margin-bottom:14px">
     <div class="metric"><div class="metric-val" id="stat-reg">—</div><div class="metric-lbl">Registered</div></div>
     <div class="metric"><div class="metric-val" id="stat-ver">—</div><div class="metric-lbl">Verified</div></div>
     <div class="metric"><div class="metric-val" id="stat-rounds">—</div><div class="metric-lbl">Rounds</div></div>
@@ -218,7 +218,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--green)}
     <div class="card-title">Active tournament</div>
     <div id="home-info" class="sub">Loading…</div>
   </div>
-  <div class="card">
+  <div class="card" id="home-players-card">
     <div class="card-title" id="home-players-title">Verified players</div>
     <div id="home-recent"><div class="empty">No players yet</div></div>
   </div>
@@ -525,6 +525,7 @@ setTimeout(()=>{
 // ═══════════════════════════════════════════════════════
 function switchPage(p, btn){
   if(p==='register' && localStorage.getItem('efhq_registered') && !S.adminIn) return;
+  if((p==='bracket' || p==='profile') && !S.adminIn){ toast('Admin access required'); return; }
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
@@ -593,16 +594,18 @@ function refreshHome(){
 
   // Admins see all recent registrations; users only see verified players
   const el = document.getElementById('home-recent');
+  document.getElementById('home-stats').style.display = S.adminIn ? 'grid' : 'none';
+
+  // Show/hide players card — admin only
+  const playersCard = document.getElementById('home-players-card');
   if(S.adminIn){
+    playersCard.style.display = 'block';
     document.getElementById('home-players-title').textContent = 'Recent registrations';
     document.getElementById('stat-reg').parentElement.querySelector('.metric-lbl').textContent = 'Registered';
     const recent = S.players.slice(-5).reverse();
     el.innerHTML = recent.length ? recent.map(p=>playerRowHTML(p,false)).join('') : '<div class="empty">No players yet</div>';
   } else {
-    document.getElementById('home-players-title').textContent = 'Verified players';
-    document.getElementById('stat-reg').parentElement.querySelector('.metric-lbl').textContent = 'Verified';
-    const verified = S.players.filter(p=>p.status==='verified');
-    el.innerHTML = verified.length ? verified.map(p=>playerRowHTML(p,false)).join('') : '<div class="empty">No verified players yet</div>';
+    playersCard.style.display = 'none';
   }
 
   // Show bracket admin controls only to admin
@@ -948,6 +951,9 @@ async function adminLogin(){
     S.adminIn=true;
     document.getElementById('adm-login').style.display='none';
     document.getElementById('adm-panel').style.display='block';
+    // Show admin-only nav items
+    document.getElementById('nav-bracket').style.display='flex';
+    document.getElementById('nav-profile').style.display='flex';
     renderAdminList();
     // Populate settings fields
     document.getElementById('t-name').value  = S.settings.name;
@@ -969,6 +975,15 @@ function adminLogout(){
   document.getElementById('adm-u').value='';
   document.getElementById('adm-p').value='';
   document.getElementById('adm-err').textContent='';
+  // Hide admin-only nav items
+  document.getElementById('nav-bracket').style.display='none';
+  document.getElementById('nav-profile').style.display='none';
+  // If currently on a restricted page, go home
+  const restricted = ['bracket','profile'];
+  const activePage = document.querySelector('.page.active');
+  if(activePage && restricted.some(p => activePage.id === 'page-'+p)){
+    switchPage('home', document.querySelector('.nav-btn'));
+  }
   refreshHome();
 }
 
