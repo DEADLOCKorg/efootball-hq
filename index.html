@@ -196,7 +196,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--green)}
   </a>
   <nav class="nav">
     <button class="nav-btn active" onclick="switchPage('home',this)"><span class="nav-icon">&#9776;</span>Home</button>
-    <button class="nav-btn" onclick="switchPage('register',this)"><span class="nav-icon">&#9997;</span>Register</button>
+    <button class="nav-btn" id="nav-register" onclick="switchPage('register',this)"><span class="nav-icon">&#128273;</span>Login</button>
     <button class="nav-btn" onclick="switchPage('bracket',this)"><span class="nav-icon">&#127942;</span>Bracket</button>
     <button class="nav-btn" onclick="switchPage('fixtures',this)"><span class="nav-icon">&#128247;</span>Fixtures</button>
     <button class="nav-btn" onclick="switchPage('profile',this)"><span class="nav-icon">&#128100;</span>Profile</button>
@@ -224,26 +224,39 @@ input:focus,select:focus,textarea:focus{border-color:var(--green)}
   </div>
 </div>
 
-<!-- ═══════════════════════════════ REGISTER ═══════════════════════════════ -->
+<!-- ═══════════════════════════════ LOGIN / SIGNUP ═══════════════════════════════ -->
 <div class="page" id="page-register">
-  <div class="section-title">Player registration</div>
-  <div class="card">
-    <div class="card-title">Registration link</div>
-    <div class="sub">Share this with players to register</div>
-    <div class="link-box" id="reg-link">Loading…</div>
-    <div class="btn-row">
-      <button class="btn sm" onclick="copyLink()">Copy link</button>
-      <button class="btn sm" onclick="genLink()">Generate new</button>
+
+  <!-- SIGN UP FORM -->
+  <div id="auth-signup">
+    <div class="section-title">Create account</div>
+    <div class="card" style="max-width:400px;margin:0 auto">
+      <div class="sub" style="margin-bottom:14px">Register your spot in the tournament. Your details are saved privately on this device.</div>
+      <div class="form-row"><label>Full name *</label><input id="r-name" placeholder="e.g. Gasoline Ghoul" /></div>
+      <div class="form-row"><label>Phone / WhatsApp *</label><input id="r-phone" placeholder="+254 7xx xxx xxx" /></div>
+      <div class="form-row"><label>Favourite team</label><input id="r-team" placeholder="e.g. Barcelona" /></div>
+      <div class="form-row"><label>M-Pesa / payment reference</label><input id="r-mpesa" placeholder="Transaction code" /></div>
+      <div class="form-row"><label>Password *</label><input id="r-pass" type="password" placeholder="Choose a password" autocomplete="new-password" /></div>
+      <div class="form-row"><label>Confirm password *</label><input id="r-pass2" type="password" placeholder="Repeat password" autocomplete="new-password" /></div>
+      <button class="btn primary" style="width:100%;margin-top:4px" onclick="signUp()">Create account</button>
+      <div id="signup-err" style="color:var(--red);font-size:12px;margin-top:8px"></div>
+      <div style="text-align:center;margin-top:12px;font-size:13px;color:var(--muted)">Already have an account? <button class="btn sm" onclick="showLogin()">Log in</button></div>
     </div>
   </div>
-  <div class="card">
-    <div class="card-title">Submit a registration</div>
-    <div class="form-row"><label>Full name *</label><input id="r-name" placeholder="e.g. Gasoline Ghoul" /></div>
-    <div class="form-row"><label>Phone / WhatsApp *</label><input id="r-phone" placeholder="+254 7xx xxx xxx" /></div>
-    <div class="form-row"><label>Favourite team</label><input id="r-team" placeholder="e.g. Barcelona" /></div>
-    <div class="form-row"><label>M-Pesa / payment reference</label><input id="r-mpesa" placeholder="Transaction code" /></div>
-    <button class="btn primary" onclick="registerPlayer()">Submit registration</button>
+
+  <!-- LOGIN FORM -->
+  <div id="auth-login" style="display:none">
+    <div class="section-title">Welcome back</div>
+    <div class="card" style="max-width:400px;margin:0 auto">
+      <div class="sub" style="margin-bottom:14px">Log in to access the tournament.</div>
+      <div class="form-row"><label>Phone / WhatsApp *</label><input id="l-phone" placeholder="+254 7xx xxx xxx" /></div>
+      <div class="form-row"><label>Password *</label><input id="l-pass" type="password" placeholder="Your password" autocomplete="current-password" /></div>
+      <button class="btn primary" style="width:100%;margin-top:4px" onclick="logIn()">Log in</button>
+      <div id="login-err" style="color:var(--red);font-size:12px;margin-top:8px"></div>
+      <div style="text-align:center;margin-top:12px;font-size:13px;color:var(--muted)">New here? <button class="btn sm" onclick="showSignup()">Create account</button></div>
+    </div>
   </div>
+
 </div>
 
 <!-- ═══════════════════════════════ BRACKET ═══════════════════════════════ -->
@@ -511,6 +524,7 @@ setTimeout(()=>{
 //  NAV
 // ═══════════════════════════════════════════════════════
 function switchPage(p, btn){
+  if(p==='register' && localStorage.getItem('efhq_registered') && !S.adminIn) return;
   document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
   document.getElementById('page-'+p).classList.add('active');
@@ -602,16 +616,41 @@ function applySettings(){
 }
 
 // ═══════════════════════════════════════════════════════
-//  REGISTRATION
+//  AUTH — SIGNUP / LOGIN
 // ═══════════════════════════════════════════════════════
-async function registerPlayer(){
+function showLogin(){ document.getElementById('auth-signup').style.display='none'; document.getElementById('auth-login').style.display='block'; }
+function showSignup(){ document.getElementById('auth-login').style.display='none'; document.getElementById('auth-signup').style.display='block'; }
+
+async function signUp(){
   const name  = document.getElementById('r-name').value.trim().substring(0,80);
   const phone = document.getElementById('r-phone').value.trim().substring(0,30);
   const team  = document.getElementById('r-team').value.trim().substring(0,60);
   const mpesa = document.getElementById('r-mpesa').value.trim().substring(0,30);
-  if(!name||!phone){ toast('Name and phone are required'); return; }
-  // Basic phone sanity check
-  if(!/^[\d\s\+\-\(\)]{7,20}$/.test(phone)){ toast('Enter a valid phone number'); return; }
+  const pass  = document.getElementById('r-pass').value;
+  const pass2 = document.getElementById('r-pass2').value;
+  const errEl = document.getElementById('signup-err');
+  errEl.textContent = '';
+
+  if(!name || !phone){ errEl.textContent = 'Name and phone are required'; return; }
+  if(!/^[\d\s\+\-\(\)]{7,20}$/.test(phone)){ errEl.textContent = 'Enter a valid phone number'; return; }
+  if(!pass || pass.length < 4){ errEl.textContent = 'Password must be at least 4 characters'; return; }
+  if(pass !== pass2){ errEl.textContent = 'Passwords do not match'; return; }
+
+  // Check phone not already registered locally
+  const existing = JSON.parse(localStorage.getItem('efhq_accounts') || '[]');
+  if(existing.find(a => a.phone === phone)){ errEl.textContent = 'This phone is already registered. Log in instead.'; return; }
+
+  // Hash the password
+  const passHash = await hashPass(pass);
+
+  // Save account to localStorage (private, not visible to other users)
+  const account = { name, phone, team, mpesa, passHash, createdAt: Date.now() };
+  existing.push(account);
+  localStorage.setItem('efhq_accounts', JSON.stringify(existing));
+  localStorage.setItem('efhq_session', JSON.stringify({ phone, name, team }));
+  localStorage.setItem('efhq_registered', '1');
+
+  // Also submit to Firebase as a pending player
   const player = { name, phone, team, mpesa, status:'pending', color:randColor(), createdAt: Date.now() };
   if(S.fbReady){
     await fbAdd('players', player);
@@ -620,23 +659,49 @@ async function registerPlayer(){
     S.players.push(player);
     refreshAll();
   }
-  ['r-name','r-phone','r-team','r-mpesa'].forEach(id=>document.getElementById(id).value='');
-  toast('Registration submitted! Pending payment verification.');
+
+  toast('Account created! Awaiting payment verification.');
+  hideRegisterTab();
+  switchPage('home', document.querySelector('.nav-btn'));
 }
 
-function copyLink(){
-  const txt = document.getElementById('reg-link').textContent;
-  navigator.clipboard && navigator.clipboard.writeText(txt);
-  toast('Link copied to clipboard!');
+async function logIn(){
+  const phone = document.getElementById('l-phone').value.trim();
+  const pass  = document.getElementById('l-pass').value;
+  const errEl = document.getElementById('login-err');
+  errEl.textContent = '';
+
+  if(!phone || !pass){ errEl.textContent = 'Phone and password are required'; return; }
+
+  const accounts = JSON.parse(localStorage.getItem('efhq_accounts') || '[]');
+  const account  = accounts.find(a => a.phone === phone);
+
+  if(!account){ errEl.textContent = 'No account found with that phone number'; return; }
+
+  // Small delay to slow brute-force
+  await new Promise(r => setTimeout(r, 500));
+  const passHash = await hashPass(pass);
+  if(passHash !== account.passHash){ errEl.textContent = 'Incorrect password'; return; }
+
+  localStorage.setItem('efhq_session', JSON.stringify({ phone: account.phone, name: account.name, team: account.team }));
+  localStorage.setItem('efhq_registered', '1');
+
+  toast(`Welcome back, ${account.name}!`);
+  hideRegisterTab();
+  switchPage('home', document.querySelector('.nav-btn'));
 }
-function genLink(){
-  const code = 'T'+Math.random().toString(36).substring(2,8).toUpperCase();
-  const link = `efootballhq.app/register?t=${code}&ref=admin`;
-  document.getElementById('reg-link').textContent = link;
-  S.settings.regLink = link;
-  if(S.fbReady) fbSet('meta','settings',S.settings).catch(()=>{});
-  toast('New link generated');
+
+function hideRegisterTab(){
+  const btn = document.getElementById('nav-register');
+  if(btn) btn.style.display = 'none';
 }
+
+// On load — hide register tab if already logged in, or show login form if account exists
+window.addEventListener('load', ()=>{
+  if(localStorage.getItem('efhq_registered')) hideRegisterTab();
+  else if(localStorage.getItem('efhq_accounts') && JSON.parse(localStorage.getItem('efhq_accounts')).length > 0) showLogin();
+});
+
 
 // ═══════════════════════════════════════════════════════
 //  BRACKET
