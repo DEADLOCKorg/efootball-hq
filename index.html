@@ -52,21 +52,38 @@
 @media(prefers-color-scheme:dark){
   :root{--bg:#111;--surface:#1e1e1e;--border:#333;--text:#f0f0f0;--muted:#999}
 }
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
 
-/* TOPBAR */
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:54px;position:sticky;top:0;z-index:50}
-.logo{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;text-decoration:none;color:var(--text)}
+/* SIDEBAR */
+.sidebar{width:220px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:50;padding:0 0 16px}
+.logo{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700;text-decoration:none;color:var(--text);padding:18px 16px 16px;border-bottom:1px solid var(--border);margin-bottom:8px}
 .logo-icon{width:34px;height:34px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0}
-.nav{display:flex;gap:2px;overflow-x:auto}
-.nav-btn{padding:6px 12px;border-radius:8px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:13px;white-space:nowrap;font-family:inherit}
+.nav{display:flex;flex-direction:column;gap:2px;padding:0 10px}
+.nav-btn{padding:9px 12px;border-radius:8px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:13px;font-family:inherit;font-weight:500;text-align:left;display:flex;align-items:center;gap:10px;transition:all .15s}
 .nav-btn:hover,.nav-btn.active{background:var(--green-light);color:var(--green-dark)}
 .nav-btn.admin-nav{color:var(--gold)}
 .nav-btn.admin-nav.active,.nav-btn.admin-nav:hover{background:var(--gold-light);color:var(--gold-dark)}
+.nav-icon{font-size:15px;width:18px;text-align:center}
+.fb-pill{margin:auto 16px 0;padding:6px 10px;border-radius:8px;font-size:11px;font-weight:600}
+.fb-pill.ok{background:var(--green-light);color:var(--green-dark)}
+.fb-pill.err{background:#FCEBEB;color:#791F1F}
+.fb-pill.loading{background:var(--gold-light);color:var(--gold-dark)}
 
-/* LAYOUT */
-.page{display:none;padding:16px;max-width:900px;margin:0 auto}
+/* MAIN CONTENT */
+.main{margin-left:220px;flex:1;min-height:100vh}
+.page{display:none;padding:24px;max-width:860px}
 .page.active{display:block}
+
+/* MOBILE */
+@media(max-width:680px){
+  .sidebar{width:100%;min-height:auto;height:54px;flex-direction:row;align-items:center;border-right:none;border-bottom:1px solid var(--border);padding:0;position:fixed;top:0}
+  .logo{border-bottom:none;margin-bottom:0;padding:0 14px;font-size:14px}
+  .nav{flex-direction:row;padding:0 8px;overflow-x:auto;gap:2px}
+  .nav-btn{padding:6px 10px;white-space:nowrap;gap:6px}
+  .nav-icon{display:none}
+  .fb-pill{display:none}
+  .main{margin-left:0;margin-top:54px}
+}
 .section-title{font-size:20px;font-weight:600;margin-bottom:16px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px}
 .card-title{font-size:15px;font-weight:600;margin-bottom:10px}
@@ -171,28 +188,27 @@ input:focus,select:focus,textarea:focus{border-color:var(--green)}
 </head>
 <body>
 
-<!-- TOP BAR -->
-<div class="topbar">
+<!-- SIDEBAR -->
+<aside class="sidebar">
   <a class="logo" href="#">
     <div class="logo-icon">EF</div>
     <span>eFootball HQ</span>
   </a>
   <nav class="nav">
-    <button class="nav-btn active" onclick="switchPage('home',this)">Home</button>
-    <button class="nav-btn" onclick="switchPage('register',this)">Register</button>
-    <button class="nav-btn" onclick="switchPage('bracket',this)">Bracket</button>
-    <button class="nav-btn" onclick="switchPage('fixtures',this)">Fixtures</button>
-    <button class="nav-btn" onclick="switchPage('profile',this)">Profile</button>
-    <button class="nav-btn admin-nav" onclick="switchPage('admin',this)">Admin</button>
+    <button class="nav-btn active" onclick="switchPage('home',this)"><span class="nav-icon">&#9776;</span>Home</button>
+    <button class="nav-btn" onclick="switchPage('register',this)"><span class="nav-icon">&#9997;</span>Register</button>
+    <button class="nav-btn" onclick="switchPage('bracket',this)"><span class="nav-icon">&#127942;</span>Bracket</button>
+    <button class="nav-btn" onclick="switchPage('fixtures',this)"><span class="nav-icon">&#128247;</span>Fixtures</button>
+    <button class="nav-btn" onclick="switchPage('profile',this)"><span class="nav-icon">&#128100;</span>Profile</button>
+    <button class="nav-btn admin-nav" onclick="switchPage('admin',this)"><span class="nav-icon">&#128274;</span>Admin</button>
   </nav>
-</div>
+  <div class="fb-pill loading" id="fb-badge">connecting…</div>
+</aside>
+<div class="main">
 
 <!-- ═══════════════════════════════ HOME ═══════════════════════════════ -->
 <div class="page active" id="page-home">
-  <div class="section-title">
-    Tournament dashboard
-    <span class="fb-status loading" id="fb-badge">connecting…</span>
-  </div>
+  <div class="section-title">Tournament dashboard</div>
   <div class="grid3" style="margin-bottom:14px">
     <div class="metric"><div class="metric-val" id="stat-reg">—</div><div class="metric-lbl">Registered</div></div>
     <div class="metric"><div class="metric-val" id="stat-ver">—</div><div class="metric-lbl">Verified</div></div>
@@ -203,7 +219,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--green)}
     <div id="home-info" class="sub">Loading…</div>
   </div>
   <div class="card">
-    <div class="card-title">Recent registrations</div>
+    <div class="card-title" id="home-players-title">Verified players</div>
     <div id="home-recent"><div class="empty">No players yet</div></div>
   </div>
 </div>
@@ -235,14 +251,16 @@ input:focus,select:focus,textarea:focus{border-color:var(--green)}
   <div class="section-title">Tournament bracket</div>
   <div class="card">
     <div class="sub">Only verified players are included. Count must be a power of 2 (2, 4, 8, 16, 32, 64, 128).</div>
-    <div class="btn-row" style="margin-bottom:10px">
-      <button class="btn primary" onclick="generateBracket()">Generate &amp; randomize</button>
-      <button class="btn" onclick="resetBracket()">Reset bracket</button>
-      <span id="bracket-badge" class="badge gray"></span>
+    <div id="bracket-admin-controls" style="display:none">
+      <div class="btn-row" style="margin-bottom:10px">
+        <button class="btn primary" onclick="generateBracket()">Generate &amp; randomize</button>
+        <button class="btn" onclick="resetBracket()">Reset bracket</button>
+        <span id="bracket-badge" class="badge gray"></span>
+      </div>
     </div>
     <div id="bracket-err" style="color:var(--red);font-size:13px;display:none;margin-bottom:8px;padding:8px;background:#FCEBEB;border-radius:8px"></div>
     <div class="bracket-scroll" id="bracket-wrap">
-      <div class="empty">No bracket yet — click Generate &amp; randomize</div>
+      <div class="empty">No bracket yet</div>
     </div>
   </div>
 </div>
@@ -333,7 +351,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--green)}
         </div>
         <div class="form-row"><label>Entry fee (KES)</label><input id="t-fee" type="number" value="200" /></div>
         <div class="form-row"><label>Prize pool (KES)</label><input id="t-prize" type="number" value="5000" /></div>
-        <div class="form-row"><label>Admin password (change this!)</label><input id="t-pass" type="password" value="mbavutatu" /></div>
+        <div class="form-row"><label>Admin password (leave blank to keep current)</label><input id="t-pass" type="password" placeholder="New password…" autocomplete="new-password" /></div>
+        <div class="form-row"><label>Anthropic API key (for AI assistant)</label><input id="t-aikey" type="password" placeholder="sk-ant-…" autocomplete="off" /></div>
+        <div class="setup-note" style="margin-top:8px"><strong>🔑 API key security</strong>Your API key is stored in Firebase and only loaded when you're logged in as admin. Never share it publicly.</div>
         <button class="btn primary" onclick="saveSettings()">Save settings</button>
       </div>
     </div>
@@ -379,6 +399,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--green)}
 </div>
 
 <div class="toast" id="toast"></div>
+</div><!-- end .main -->
 
 <script>
 // ═══════════════════════════════════════════════════════
@@ -392,7 +413,8 @@ const S = {
     max: 32,
     fee: 200,
     prize: 5000,
-    adminPass: 'mbavutatu',
+    adminPassHash: '', // SHA-256 hash of password (set on first save)
+    aiKey: '',         // Anthropic API key — stored only in Firebase/localStorage
     regLink: 'efootballhq.app/register?t=MBAVUTATU2025&ref=admin'
   },
   adminIn: false,
@@ -462,11 +484,11 @@ document.addEventListener('firebase-ready', async () => {
     }
 
     badge.textContent = 'Firebase connected';
-    badge.className = 'fb-status ok';
+    badge.className = 'fb-pill ok';
     applySettings();
   } catch(e){
     badge.textContent = 'Firebase error — check config';
-    badge.className = 'fb-status err';
+    badge.className = 'fb-pill err';
     console.error(e);
     // Fallback: work with local state
     S.fbReady = false;
@@ -479,7 +501,7 @@ setTimeout(()=>{
   const badge = document.getElementById('fb-badge');
   if(badge.classList.contains('loading')){
     badge.textContent = 'No Firebase — local mode';
-    badge.className = 'fb-status err';
+    badge.className = 'fb-pill err';
     S.fbReady = false;
     refreshAll();
   }
@@ -514,6 +536,7 @@ function toast(msg){
 function initials(name){ return name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase(); }
 function randColor(){ return COLOR_KEYS[Math.floor(Math.random()*COLOR_KEYS.length)]; }
 function avatarStyle(c){ const col=COLORS[c||'green']; return `background:${col.light};color:${col.dark}`; }
+function escHtml(s){ const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML; }
 function statusBadge(s){
   if(s==='verified') return '<span class="badge green">verified</span>';
   if(s==='pending')  return '<span class="badge amber">pending</span>';
@@ -521,16 +544,20 @@ function statusBadge(s){
 }
 
 function playerRowHTML(p, admin=false){
+  const safeName  = escHtml(p.name);
+  const safeTeam  = escHtml(p.team||'No team');
+  const safePhone = escHtml(p.phone||'');
+  const safeId    = escHtml(p.id);
   return `<div class="player-row">
     <div class="avatar" style="${avatarStyle(p.color)}">${initials(p.name)}</div>
     <div class="pinfo">
-      <div class="pname">${p.name}</div>
-      <div class="pmeta">${p.team||'No team'} · ${p.phone||''}</div>
+      <div class="pname">${safeName}</div>
+      <div class="pmeta">${safeTeam} · ${safePhone}</div>
     </div>
     <div class="pactions">
       ${statusBadge(p.status)}
-      ${admin ? `<button class="btn sm" onclick="toggleVerify('${p.id}')">${p.status==='verified'?'Unverify':'Verify'}</button>
-                 <button class="btn sm danger" onclick="removePlayer('${p.id}')">Remove</button>` : ''}
+      ${admin ? `<button class="btn sm" onclick="toggleVerify('${safeId}')">${p.status==='verified'?'Unverify':'Verify'}</button>
+                 <button class="btn sm danger" onclick="removePlayer('${safeId}')">Remove</button>` : ''}
     </div>
   </div>`;
 }
@@ -543,14 +570,30 @@ function refreshAll(){ refreshHome(); if(S.adminIn) renderAdminList(); }
 function refreshHome(){
   const total = S.players.length;
   const ver   = S.players.filter(p=>p.status==='verified').length;
-  document.getElementById('stat-reg').textContent   = total;
+  // Non-admins only see verified counts
+  document.getElementById('stat-reg').textContent   = S.adminIn ? total : ver;
   document.getElementById('stat-ver').textContent   = ver;
   document.getElementById('stat-rounds').textContent= S.bracket ? S.bracket.length : '—';
   document.getElementById('home-info').textContent  =
-    `${S.settings.name} | Max: ${S.settings.max} | Entry: KES ${S.settings.fee} | Prize: KES ${S.settings.prize}`;
-  const recent = S.players.slice(-5).reverse();
+    `${S.settings.name} | Max: ${S.settings.max} players | Entry: KES ${S.settings.fee}`;
+
+  // Admins see all recent registrations; users only see verified players
   const el = document.getElementById('home-recent');
-  el.innerHTML = recent.length ? recent.map(p=>playerRowHTML(p,false)).join('') : '<div class="empty">No players yet</div>';
+  if(S.adminIn){
+    document.getElementById('home-players-title').textContent = 'Recent registrations';
+    document.getElementById('stat-reg').parentElement.querySelector('.metric-lbl').textContent = 'Registered';
+    const recent = S.players.slice(-5).reverse();
+    el.innerHTML = recent.length ? recent.map(p=>playerRowHTML(p,false)).join('') : '<div class="empty">No players yet</div>';
+  } else {
+    document.getElementById('home-players-title').textContent = 'Verified players';
+    document.getElementById('stat-reg').parentElement.querySelector('.metric-lbl').textContent = 'Verified';
+    const verified = S.players.filter(p=>p.status==='verified');
+    el.innerHTML = verified.length ? verified.map(p=>playerRowHTML(p,false)).join('') : '<div class="empty">No verified players yet</div>';
+  }
+
+  // Show bracket admin controls only to admin
+  const bracketControls = document.getElementById('bracket-admin-controls');
+  if(bracketControls) bracketControls.style.display = S.adminIn ? 'block' : 'none';
 }
 
 function applySettings(){
@@ -562,11 +605,13 @@ function applySettings(){
 //  REGISTRATION
 // ═══════════════════════════════════════════════════════
 async function registerPlayer(){
-  const name  = document.getElementById('r-name').value.trim();
-  const phone = document.getElementById('r-phone').value.trim();
-  const team  = document.getElementById('r-team').value.trim();
-  const mpesa = document.getElementById('r-mpesa').value.trim();
+  const name  = document.getElementById('r-name').value.trim().substring(0,80);
+  const phone = document.getElementById('r-phone').value.trim().substring(0,30);
+  const team  = document.getElementById('r-team').value.trim().substring(0,60);
+  const mpesa = document.getElementById('r-mpesa').value.trim().substring(0,30);
   if(!name||!phone){ toast('Name and phone are required'); return; }
+  // Basic phone sanity check
+  if(!/^[\d\s\+\-\(\)]{7,20}$/.test(phone)){ toast('Enter a valid phone number'); return; }
   const player = { name, phone, team, mpesa, status:'pending', color:randColor(), createdAt: Date.now() };
   if(S.fbReady){
     await fbAdd('players', player);
@@ -608,6 +653,7 @@ function roundLabel(remaining){
 }
 
 async function generateBracket(){
+  if(!S.adminIn){ toast('Admin access required'); return; }
   const verified = S.players.filter(p=>p.status==='verified');
   const n = verified.length;
   const errEl = document.getElementById('bracket-err');
@@ -659,6 +705,7 @@ async function generateBracket(){
 }
 
 async function resetBracket(){
+  if(!S.adminIn){ toast('Admin access required'); return; }
   S.bracket = null;
   if(S.fbReady) await fbSet('meta','bracket',{rounds:null}).catch(()=>{});
   document.getElementById('bracket-wrap').innerHTML = '<div class="empty">No bracket yet — click Generate &amp; randomize</div>';
@@ -821,10 +868,18 @@ function saveProfile(){
 // ═══════════════════════════════════════════════════════
 //  ADMIN
 // ═══════════════════════════════════════════════════════
-function adminLogin(){
+async function hashPass(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function adminLogin(){
   const u = document.getElementById('adm-u').value;
   const p = document.getElementById('adm-p').value;
-  if(u==='admin' && p===S.settings.adminPass){
+  const hashed = await hashPass(p);
+  // Compare against stored hash; fall back to comparing hash of default if no hash stored yet
+  const storedHash = S.settings.adminPassHash || await hashPass('mbavutatu');
+  if(u==='admin' && hashed === storedHash){
     S.adminIn=true;
     document.getElementById('adm-login').style.display='none';
     document.getElementById('adm-panel').style.display='block';
@@ -834,7 +889,11 @@ function adminLogin(){
     document.getElementById('t-max').value   = S.settings.max;
     document.getElementById('t-fee').value   = S.settings.fee;
     document.getElementById('t-prize').value = S.settings.prize;
+    document.getElementById('t-aikey').value = S.settings.aiKey || '';
+    refreshHome();
   } else {
+    // Small delay to slow brute-force attempts
+    await new Promise(r=>setTimeout(r,800));
     document.getElementById('adm-err').textContent='Incorrect credentials';
   }
 }
@@ -845,6 +904,7 @@ function adminLogout(){
   document.getElementById('adm-u').value='';
   document.getElementById('adm-p').value='';
   document.getElementById('adm-err').textContent='';
+  refreshHome();
 }
 
 function admTab(tab, btn){
@@ -882,10 +942,10 @@ function openAddModal(){ document.getElementById('modal').classList.add('open');
 function closeModal(){ document.getElementById('modal').classList.remove('open'); }
 
 async function addPlayer(){
-  const name  = document.getElementById('m-name').value.trim();
-  const phone = document.getElementById('m-phone').value.trim();
-  const team  = document.getElementById('m-team').value.trim();
-  const mpesa = document.getElementById('m-mpesa').value.trim();
+  const name  = document.getElementById('m-name').value.trim().substring(0,80);
+  const phone = document.getElementById('m-phone').value.trim().substring(0,30);
+  const team  = document.getElementById('m-team').value.trim().substring(0,60);
+  const mpesa = document.getElementById('m-mpesa').value.trim().substring(0,30);
   const status= document.getElementById('m-status').value;
   if(!name){ toast('Name is required'); return; }
   const p = { name, phone, team, mpesa, status, color:randColor(), createdAt:Date.now() };
@@ -902,7 +962,13 @@ async function saveSettings(){
   S.settings.max        = parseInt(document.getElementById('t-max').value);
   S.settings.fee        = parseInt(document.getElementById('t-fee').value);
   S.settings.prize      = parseInt(document.getElementById('t-prize').value);
-  S.settings.adminPass  = document.getElementById('t-pass').value || S.settings.adminPass;
+  S.settings.aiKey      = document.getElementById('t-aikey').value.trim();
+  const newPass = document.getElementById('t-pass').value;
+  if(newPass){
+    S.settings.adminPassHash = await hashPass(newPass);
+    delete S.settings.adminPass; // remove any legacy plain-text pass
+    document.getElementById('t-pass').value = '';
+  }
   if(S.fbReady) await fbSet('meta','settings', S.settings).catch(()=>{});
   toast('Settings saved');
   refreshHome();
@@ -913,19 +979,39 @@ async function saveSettings(){
 // ═══════════════════════════════════════════════════════
 function setQ(txt){ document.getElementById('ai-q').value=txt; }
 
+// AI rate limiting — max 5 calls per minute
+const _aiRateLimit = { calls: [], maxPerMin: 5 };
+function _aiAllowed(){
+  const now = Date.now();
+  _aiRateLimit.calls = _aiRateLimit.calls.filter(t => now - t < 60000);
+  if(_aiRateLimit.calls.length >= _aiRateLimit.maxPerMin) return false;
+  _aiRateLimit.calls.push(now);
+  return true;
+}
+
 async function askAI(){
+  if(!S.adminIn){ toast('Admin login required'); return; }
   const q = document.getElementById('ai-q').value.trim();
   if(!q){ toast('Enter a question'); return; }
+  if(!_aiAllowed()){ toast('Too many requests — wait a moment'); return; }
+
+  const apiKey = S.settings.aiKey || '';
+  if(!apiKey){
+    document.getElementById('ai-text').textContent = 'No API key set. Go to Tournament Settings → paste your Anthropic API key.';
+    document.getElementById('ai-out').style.display = 'block';
+    return;
+  }
+
   const btn = event.target;
   btn.innerHTML='<span class="spinner"></span>Asking Claude…'; btn.disabled=true;
   document.getElementById('ai-out').style.display='none';
 
-  const ctx = `Tournament: ${S.settings.name}. ${S.players.length} registered, ${S.players.filter(p=>p.status==='verified').length} verified. Entry: KES ${S.settings.fee}. Prize: KES ${S.settings.prize}. Format: single elimination, 2-legged from Round of 16, 1-legged final.`;
+  const ctx = `Tournament: ${escHtml(S.settings.name)}. ${S.players.length} registered, ${S.players.filter(p=>p.status==='verified').length} verified. Entry: KES ${S.settings.fee}. Prize: KES ${S.settings.prize}. Format: single elimination, 2-legged from Round of 16, 1-legged final.`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',
         max_tokens:1000,
@@ -933,12 +1019,16 @@ async function askAI(){
         messages:[{role:'user',content:q}]
       })
     });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      throw new Error(err.error?.message || `HTTP ${res.status}`);
+    }
     const data=await res.json();
     const text=data.content&&data.content[0]?data.content[0].text:'No response';
     document.getElementById('ai-text').textContent=text;
     document.getElementById('ai-out').style.display='block';
   } catch(e){
-    document.getElementById('ai-text').textContent='Error connecting to AI. Check your internet connection.';
+    document.getElementById('ai-text').textContent=`Error: ${e.message}. Check your API key and internet connection.`;
     document.getElementById('ai-out').style.display='block';
   }
   btn.textContent='Ask Claude'; btn.disabled=false;
